@@ -1,0 +1,48 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Shipment {
+  id           Int      @id @default(autoincrement())
+  supplierName String
+  checkedTime  DateTime @default(now())
+  status       String   @default("pending")
+  createdBy    String
+
+  level1Check Level1Check?
+  units       UnitCheck[]
+}
+
+model Level1Check {
+  id          Int      @id @default(autoincrement())
+  shipmentId  Int      @unique
+  packagingOk Boolean
+  sealOk      Boolean
+  unitCountOk Boolean
+  damageNotes String?
+  photos      String[]
+  status      String
+  doneBy      String
+  doneAt      DateTime @default(now())
+
+  shipment Shipment @relation(fields: [shipmentId], references: [id])
+}
+
+model UnitCheck {
+  id         Int      @id @default(autoincrement())
+  shipmentId Int
+  unitCode   String
+  qcStatus   String
+  issueNotes String?
+  photo      String?
+  checkedBy  String
+  checkedAt  DateTime @default(now())
+
+  shipment Shipment @relation(fields: [shipmentId], references: [id])
+}
